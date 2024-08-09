@@ -12,7 +12,6 @@
 	<artifactId>AttachmentService</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>AttachmentService</name>
-	<description>Demo project for Spring Boot</description>
 	<url/>
 	<licenses>
 		<license/>
@@ -89,6 +88,7 @@
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
 				<configuration>
+					<mainClass>attachment.service.attachmentService.AttachmentServiceApplication</mainClass>
 					<excludes>
 						<exclude>
 							<groupId>org.projectlombok</groupId>
