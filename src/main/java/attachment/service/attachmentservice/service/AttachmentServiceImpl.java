@@ -31,7 +31,7 @@ public class AttachmentServiceImpl implements AttachmentService {
     }
 
     private String uploadFileToDropBox(MultipartFile file) throws IOException, DbxException {
-        try(InputStream inputStream = file.getInputStream()) {
+        try (InputStream inputStream = file.getInputStream()) {
             FileMetadata metadata = client.files()
                     .uploadBuilder("/" + file.getOriginalFilename())
                     .uploadAndFinish(inputStream);

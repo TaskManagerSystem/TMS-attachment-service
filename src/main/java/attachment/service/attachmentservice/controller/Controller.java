@@ -1,6 +1,5 @@
 package attachment.service.attachmentservice.controller;
 
-import attachment.service.attachmentservice.dto.AttachmentDTO;
 import attachment.service.attachmentservice.service.AttachmentService;
 import com.dropbox.core.DbxException;
 import java.io.IOException;
