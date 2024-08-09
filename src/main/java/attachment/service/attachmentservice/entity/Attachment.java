@@ -1,4 +1,4 @@
-package attachment_service.AttachmentService.entity;
+package attachment.service.attachmentservice.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
