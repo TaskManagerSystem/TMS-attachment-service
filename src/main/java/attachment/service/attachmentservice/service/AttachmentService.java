@@ -7,5 +7,5 @@ import org.springframework.web.multipart.MultipartFile;
 public interface AttachmentService {
     String uploadFile(Long taskId, MultipartFile file) throws IOException, DbxException;
 
-    void downloadFromDropBox(String fileName);
+    String downloadFromDropBox(Long id) throws DbxException;
 }

@@ -9,9 +9,9 @@ databaseChangeLog:
               - column:
                   name: id
                   type: BIGINT
+                  autoIncrement: true
                   constraints:
                     primaryKey: true
-                    autoIncrement: true
               - column:
                   name: task_id
                   type: BIGINT

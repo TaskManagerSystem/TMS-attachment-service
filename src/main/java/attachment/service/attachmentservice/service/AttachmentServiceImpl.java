@@ -5,6 +5,8 @@ import attachment.service.attachmentservice.repo.AttachmentRepository;
 import com.dropbox.core.DbxException;
 import com.dropbox.core.v2.DbxClientV2;
 import com.dropbox.core.v2.files.FileMetadata;
+import com.dropbox.core.v2.files.GetTemporaryLinkResult;
+import jakarta.persistence.EntityNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.LocalDateTime;
@@ -40,7 +42,15 @@ public class AttachmentServiceImpl implements AttachmentService {
     }
 
     @Override
-    public void downloadFromDropBox(String fileName) {
+    public String downloadFromDropBox(Long id) throws DbxException {
+        Attachment attachmentById = attachmentRepository
+                .findById(id)
+                .orElseThrow(
+                        () -> new EntityNotFoundException(
+                                "Can not find attachment by id: " + id));
+        String dropBoxFile = attachmentById.getDropBoxFile();
+        GetTemporaryLinkResult linkResult = client.files().getTemporaryLink(dropBoxFile);
 
+        return linkResult.getLink();
     }
 }
