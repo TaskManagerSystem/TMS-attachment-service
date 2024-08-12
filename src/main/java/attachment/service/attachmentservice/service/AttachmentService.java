@@ -8,4 +8,6 @@ public interface AttachmentService {
     String uploadFile(Long taskId, MultipartFile file) throws IOException, DbxException;
 
     String downloadFromDropBox(Long id) throws DbxException;
+
+    void deleteAttachment(Long id) throws DbxException;
 }

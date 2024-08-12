@@ -43,14 +43,26 @@ public class AttachmentServiceImpl implements AttachmentService {
 
     @Override
     public String downloadFromDropBox(Long id) throws DbxException {
-        Attachment attachmentById = attachmentRepository
-                .findById(id)
-                .orElseThrow(
-                        () -> new EntityNotFoundException(
-                                "Can not find attachment by id: " + id));
+        Attachment attachmentById = findAttachmentById(id);
         String dropBoxFile = attachmentById.getDropBoxFile();
         GetTemporaryLinkResult linkResult = client.files().getTemporaryLink(dropBoxFile);
 
         return linkResult.getLink();
+    }
+
+    @Override
+    public void deleteAttachment(Long id) throws DbxException {
+        Attachment attachmentById = findAttachmentById(id);
+        client.files().deleteV2(attachmentById.getDropBoxFile());
+        attachmentRepository.deleteById(id);
+    }
+
+    private Attachment findAttachmentById(Long id) {
+        return attachmentRepository
+                .findById(id)
+                .orElseThrow(
+                        () -> new EntityNotFoundException(
+                                "Can not find attachment by id: " + id));
+
     }
 }
