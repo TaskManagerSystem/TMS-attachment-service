@@ -22,11 +22,6 @@ import org.springframework.web.multipart.MultipartFile;
 public class Controller {
     private final AttachmentService attachmentService;
 
-    @GetMapping("/me")
-    public String hello() {
-        return "Hello";
-    }
-
     @PostMapping
     public ResponseEntity<String> uploadFile(@RequestParam("taskId") Long taskId,
                                              @RequestParam("file") MultipartFile file) {
