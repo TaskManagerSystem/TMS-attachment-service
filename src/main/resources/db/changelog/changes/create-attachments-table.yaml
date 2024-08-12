@@ -1,0 +1,34 @@
+databaseChangeLog:
+  - changeSet:
+      id: create-attachments-table
+      author: Dmytro.Hadiuchko
+      changes:
+        - createTable:
+            tableName: attachments
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  constraints:
+                    primaryKey: true
+                    autoIncrement: true
+              - column:
+                  name: task_id
+                  type: BIGINT
+                  constraints:
+                    nullable: true
+              - column:
+                  name: drop_box_file
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: file_name
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: upload_time
+                  type: TIMESTAMP
+                  constraints:
+                    nullable: true
