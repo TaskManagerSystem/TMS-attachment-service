@@ -11,9 +11,11 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
 @RestController
@@ -21,44 +23,67 @@ import org.springframework.web.multipart.MultipartFile;
 @RequiredArgsConstructor
 public class AttachmentController {
     private final AttachmentService attachmentService;
+    private final RestTemplate restTemplate;
 
     @PostMapping
     public ResponseEntity<String> uploadFile(@RequestParam("taskId") Long taskId,
-                                             @RequestParam("file") MultipartFile file) {
-        try {
-            String dropboxFileId = attachmentService.uploadFile(taskId, file);
-            return ResponseEntity.ok("File uploaded successfully. "
-                    + "Dropbox File ID: " + dropboxFileId);
-        } catch (IOException | DbxException e) {
-            return ResponseEntity
-                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Failed to upload file: " + e.getMessage());
+                                             @RequestParam("file") MultipartFile file,
+                                             @RequestHeader("Authorization") String token) {
+        if (validateToken(token)) {
+            try {
+                String dropboxFileId = attachmentService.uploadFile(taskId, file);
+                return ResponseEntity.ok("File uploaded successfully. "
+                        + "Dropbox File ID: " + dropboxFileId);
+            } catch (IOException | DbxException e) {
+                return ResponseEntity
+                        .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                        .body("Failed to upload file: " + e.getMessage());
+            }
+        } else {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid token");
         }
     }
 
     @GetMapping
-    public ResponseEntity<String> downloadFile(@RequestParam Long taskId) {
-        try {
-            String link = attachmentService.downloadFromDropBox(taskId);
-            return ResponseEntity.ok(link);
-        } catch (DbxException e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Failed to download the file. Please try again later.");
-        } catch (EntityNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body("Attachment not found for the given task ID.");
+    public ResponseEntity<String> downloadFile(@RequestParam Long taskId,
+                                               @RequestHeader("Authorization") String token) {
+        if (validateToken(token)) {
+            try {
+                String link = attachmentService.downloadFromDropBox(taskId);
+                return ResponseEntity.ok(link);
+            } catch (DbxException e) {
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                        .body("Failed to download the file. Please try again later.");
+            } catch (EntityNotFoundException e) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body("Attachment not found for the given task ID.");
+            }
+        } else {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid token");
         }
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<String> deleteById(@PathVariable Long id) {
-        try {
-            attachmentService.deleteAttachment(id);
-            return ResponseEntity.status(HttpStatus.ACCEPTED)
-                    .body("Attachment dy id: " + id + "was deleted");
-        } catch (EntityNotFoundException | DbxException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body("Attachment not found for the given task ID: " + id);
+    public ResponseEntity<String> deleteById(@PathVariable Long id,
+                                             @RequestHeader("Authorization") String token) {
+        if (validateToken(token)) {
+            try {
+                attachmentService.deleteAttachment(id);
+                return ResponseEntity.status(HttpStatus.ACCEPTED)
+                        .body("Attachment dy id: " + id + "was deleted");
+            } catch (EntityNotFoundException | DbxException e) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body("Attachment not found for the given task ID: " + id);
+            }
+        } else {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid token");
         }
+    }
+
+    private boolean validateToken(String token) {
+        String validateEndPoint = "http://localhost:8080/api/auth/validate";
+        ResponseEntity<String> response = restTemplate.postForEntity(validateEndPoint, token, String.class);
+
+        return response.getStatusCode().equals(HttpStatus.OK);
     }
 }
