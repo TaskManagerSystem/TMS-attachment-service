@@ -49,45 +49,28 @@ public class AttachmentController {
     }
 
     @GetMapping
-    public ResponseEntity<String> downloadFile(@RequestParam Long taskId,
-                                               @RequestHeader("Authorization") String token) {
-        tokenValidation.sendTokenToValidate(token);
-
-        boolean isValid = tokenValidation.waitForTokenValidation(token);
-
-        if (isValid) {
-            try {
-                String link = attachmentService.downloadFromDropBox(taskId);
-                return ResponseEntity.ok(link);
-            } catch (DbxException e) {
-                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                        .body("Failed to download the file. Please try again later.");
-            } catch (EntityNotFoundException e) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body("Attachment not found for the given task ID.");
-            }
-        } else {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid token");
+    public ResponseEntity<String> downloadFile(@RequestParam Long taskId) {
+        try {
+            String link = attachmentService.downloadFromDropBox(taskId);
+            return ResponseEntity.ok(link);
+        } catch (DbxException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Failed to download the file. Please try again later.");
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body("Attachment not found for the given task ID.");
         }
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<String> deleteById(@PathVariable Long id,
-                                             @RequestHeader("Authorization") String token) {
-        tokenValidation.sendTokenToValidate(token);
-
-        boolean isValid = tokenValidation.waitForTokenValidation(token);
-        if (isValid) {
-            try {
-                attachmentService.deleteAttachment(id);
-                return ResponseEntity.status(HttpStatus.ACCEPTED)
-                        .body("Attachment dy id: " + id + "was deleted");
-            } catch (EntityNotFoundException | DbxException e) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body("Attachment not found for the given task ID: " + id);
-            }
-        } else {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid token");
+    public ResponseEntity<String> deleteById(@PathVariable Long id) {
+        try {
+            attachmentService.deleteAttachment(id);
+            return ResponseEntity.status(HttpStatus.ACCEPTED)
+                    .body("Attachment dy id: " + id + "was deleted");
+        } catch (EntityNotFoundException | DbxException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body("Attachment not found for the given task ID: " + id);
         }
     }
 }
