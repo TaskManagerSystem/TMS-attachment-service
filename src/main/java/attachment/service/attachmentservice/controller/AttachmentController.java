@@ -1,6 +1,7 @@
 package attachment.service.attachmentservice.controller;
 
 import attachment.service.attachmentservice.service.AttachmentService;
+import attachment.service.attachmentservice.service.TokenValidation;
 import com.dropbox.core.DbxException;
 import jakarta.persistence.EntityNotFoundException;
 import java.io.IOException;
@@ -15,21 +16,24 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/attachments")
 @RequiredArgsConstructor
 public class AttachmentController {
+    private final TokenValidation tokenValidation;
     private final AttachmentService attachmentService;
-    private final RestTemplate restTemplate;
 
     @PostMapping
     public ResponseEntity<String> uploadFile(@RequestParam("taskId") Long taskId,
                                              @RequestParam("file") MultipartFile file,
                                              @RequestHeader("Authorization") String token) {
-        if (validateToken(token)) {
+        tokenValidation.sendTokenToValidate(token);
+
+        boolean isValid = tokenValidation.waitForTokenValidation(token);
+
+        if (isValid) {
             try {
                 String dropboxFileId = attachmentService.uploadFile(taskId, file);
                 return ResponseEntity.ok("File uploaded successfully. "
@@ -47,7 +51,11 @@ public class AttachmentController {
     @GetMapping
     public ResponseEntity<String> downloadFile(@RequestParam Long taskId,
                                                @RequestHeader("Authorization") String token) {
-        if (validateToken(token)) {
+        tokenValidation.sendTokenToValidate(token);
+
+        boolean isValid = tokenValidation.waitForTokenValidation(token);
+
+        if (isValid) {
             try {
                 String link = attachmentService.downloadFromDropBox(taskId);
                 return ResponseEntity.ok(link);
@@ -66,7 +74,10 @@ public class AttachmentController {
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteById(@PathVariable Long id,
                                              @RequestHeader("Authorization") String token) {
-        if (validateToken(token)) {
+        tokenValidation.sendTokenToValidate(token);
+
+        boolean isValid = tokenValidation.waitForTokenValidation(token);
+        if (isValid) {
             try {
                 attachmentService.deleteAttachment(id);
                 return ResponseEntity.status(HttpStatus.ACCEPTED)
@@ -78,12 +89,5 @@ public class AttachmentController {
         } else {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid token");
         }
-    }
-
-    private boolean validateToken(String token) {
-        String validateEndPoint = "http://localhost:8080/api/auth/validate";
-        ResponseEntity<String> response = restTemplate.postForEntity(validateEndPoint, token, String.class);
-
-        return response.getStatusCode().equals(HttpStatus.OK);
     }
 }
