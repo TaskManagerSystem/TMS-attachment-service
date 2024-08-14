@@ -11,7 +11,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
-import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -20,7 +19,6 @@ import org.springframework.web.multipart.MultipartFile;
 public class AttachmentServiceImpl implements AttachmentService {
     private final DbxClientV2 client;
     private final AttachmentRepository attachmentRepository;
-    private final KafkaTemplate<String, String> kafkaTemplate;
 
     @Override
     public String uploadFile(Long taskId, MultipartFile file) throws IOException, DbxException {
@@ -32,7 +30,6 @@ public class AttachmentServiceImpl implements AttachmentService {
         attachment.setUploadTime(LocalDateTime.now());
         attachmentRepository.save(attachment);
 
-        kafkaTemplate.send("file-upload", "File- upload with id: " + dropBoxFileId);
         return dropBoxFileId;
     }
 
@@ -51,8 +48,6 @@ public class AttachmentServiceImpl implements AttachmentService {
         String dropBoxFile = attachmentById.getDropBoxFile();
         GetTemporaryLinkResult linkResult = client.files().getTemporaryLink(dropBoxFile);
 
-        kafkaTemplate.send("file-download-link",
-                "File could be downloaded from this link: " + linkResult.getLink());
         return linkResult.getLink();
     }
 
@@ -61,8 +56,6 @@ public class AttachmentServiceImpl implements AttachmentService {
         Attachment attachmentById = findAttachmentById(id);
         client.files().deleteV2(attachmentById.getDropBoxFile());
         attachmentRepository.deleteById(id);
-
-        kafkaTemplate.send("delete-attachment", "File with id: " + id + " was deleted");
     }
 
     private Attachment findAttachmentById(Long id) {
