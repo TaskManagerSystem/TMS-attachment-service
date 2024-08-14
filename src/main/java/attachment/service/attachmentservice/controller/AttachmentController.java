@@ -25,7 +25,6 @@ import org.springframework.web.multipart.MultipartFile;
 public class AttachmentController {
     private final TokenValidation tokenValidation;
     private final AttachmentService attachmentService;
-    private final RestTemplate restTemplate;
 
     @PostMapping
     public ResponseEntity<String> uploadFile(@RequestParam("taskId") Long taskId,
@@ -91,12 +90,5 @@ public class AttachmentController {
         } else {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid token");
         }
-    }
-
-    private boolean validateToken(String token) {
-        String validateEndPoint = "http://localhost:8080/api/auth/validate";
-        ResponseEntity<String> response = restTemplate.postForEntity(validateEndPoint, token, String.class);
-
-        return response.getStatusCode().equals(HttpStatus.OK);
     }
 }
