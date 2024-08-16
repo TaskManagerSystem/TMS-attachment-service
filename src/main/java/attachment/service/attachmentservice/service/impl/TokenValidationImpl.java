@@ -49,12 +49,15 @@ public class TokenValidationImpl implements TokenValidation {
         try {
             return future.get();
         } catch (Exception e) {
+            log.error("Error occurred while waiting for token validation for token: {}",
+                    token, e);
             return false;
         }
     }
 
     public void subscribeToTokenValidationResponse(String token,
                                                    CompletableFuture<Boolean> future) {
+        log.info("Subscribe to token validation response for token: {}", token);
         responseMap.put(token, future);
     }
 }
