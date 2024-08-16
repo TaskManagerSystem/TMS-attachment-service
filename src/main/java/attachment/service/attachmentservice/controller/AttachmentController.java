@@ -35,7 +35,7 @@ public class AttachmentController {
 
         if (isValid) {
             try {
-                String dropboxFileId = attachmentService.uploadFile(taskId, file);
+                String dropboxFileId = attachmentService.save(taskId, file);
                 return ResponseEntity.ok("File uploaded successfully. "
                         + "Dropbox File ID: " + dropboxFileId);
             } catch (IOException | DbxException e) {
