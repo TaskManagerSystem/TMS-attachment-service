@@ -32,8 +32,9 @@ public class AttachmentServiceImpl implements AttachmentService {
         try {
             client = dropBoxTokenService.getClient();
         } catch (Exception e) {
-            log.error("Error initializing Dropbox client", e);
-            throw new RuntimeException("Failed to initialize Dropbox client", e);
+            String message = "Error initializing Dropbox client";
+            log.error(message, e);
+            throw new RuntimeException(message, e);
         }
     }
 
@@ -47,6 +48,8 @@ public class AttachmentServiceImpl implements AttachmentService {
         attachment.setUploadTime(LocalDateTime.now());
         attachmentRepository.save(attachment);
 
+        log.info("Attachment created. ID: {}", attachment.getId());
+
         return dropBoxFileId;
     }
 
@@ -55,6 +58,7 @@ public class AttachmentServiceImpl implements AttachmentService {
             FileMetadata metadata = client.files()
                     .uploadBuilder("/" + file.getOriginalFilename())
                     .uploadAndFinish(inputStream);
+            log.info("File with id: {} uploaded", metadata.getId());
             return metadata.getId();
         } catch (InvalidAccessTokenException e) {
             log.error("Error uploading file to dropBox", e);
@@ -69,7 +73,7 @@ public class AttachmentServiceImpl implements AttachmentService {
             Attachment attachmentById = findAttachmentById(id);
             String dropBoxFile = attachmentById.getDropBoxFile();
             GetTemporaryLinkResult linkResult = client.files().getTemporaryLink(dropBoxFile);
-
+            log.info("Get link for file with id: {}", id);
             return linkResult.getLink();
         } catch (InvalidAccessTokenException e) {
             log.error("Error download file from dropBox", e);
@@ -83,6 +87,7 @@ public class AttachmentServiceImpl implements AttachmentService {
         try {
             Attachment attachmentById = findAttachmentById(id);
             client.files().deleteV2(attachmentById.getDropBoxFile());
+            log.info("File deleted from dropbox with id: {}", id);
             attachmentRepository.deleteById(id);
         } catch (InvalidAccessTokenException e) {
             log.error("Error delete file from dropBox", e);
@@ -94,9 +99,11 @@ public class AttachmentServiceImpl implements AttachmentService {
     private Attachment findAttachmentById(Long id) {
         return attachmentRepository
                 .findById(id)
-                .orElseThrow(
-                        () -> new EntityNotFoundException(
-                                "Can not find attachment by id: " + id));
+                .orElseThrow(() -> {
+                    String message = "Can not find attachment by id: " + id;
+                    log.error(message);
+                    return new EntityNotFoundException(message);
+                });
 
     }
 

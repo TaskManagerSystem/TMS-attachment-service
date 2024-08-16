@@ -5,9 +5,11 @@ import com.dropbox.core.DbxRequestConfig;
 import com.dropbox.core.oauth.DbxCredential;
 import com.dropbox.core.v2.DbxClientV2;
 import jakarta.annotation.PostConstruct;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+@Slf4j
 @Service
 public class DropBoxTokenService {
 
@@ -38,7 +40,9 @@ public class DropBoxTokenService {
             return new DbxClientV2(config, credential.refresh(new DbxRequestConfig(dropboxAppKey))
                     .getAccessToken());
         } catch (DbxException e) {
-            throw new RuntimeException("Can not refresh dropBox client");
+            String message = "Can not refresh dropBox client";
+            log.error(message, e);
+            throw new RuntimeException(message);
         }
     }
 }
