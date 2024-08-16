@@ -1,7 +1,9 @@
-package attachment.service.attachmentservice.service;
+package attachment.service.attachmentservice.service.impl;
 
 import attachment.service.attachmentservice.entity.Attachment;
 import attachment.service.attachmentservice.repo.AttachmentRepository;
+import attachment.service.attachmentservice.service.AttachmentService;
+import attachment.service.attachmentservice.service.DropBoxTokenService;
 import com.dropbox.core.DbxException;
 import com.dropbox.core.InvalidAccessTokenException;
 import com.dropbox.core.v2.DbxClientV2;
