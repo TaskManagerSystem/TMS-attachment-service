@@ -10,11 +10,11 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 public class KafkaProducer {
-    private final KafkaTemplate<String, String> kafkaTemplate;
+    private final KafkaTemplate<String, Object> kafkaTemplate;
 
     public void sendTokenToValidate(String token) {
         log.info("Token is sending to validate: " + token);
-        ProducerRecord<String, String> record = new ProducerRecord<>("token-validation-topic",
+        ProducerRecord<String, Object> record = new ProducerRecord<>("token-validation-topic",
                 token);
         log.info("Record sending: " + record);
         kafkaTemplate.send(record);
