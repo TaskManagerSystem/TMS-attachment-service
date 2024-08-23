@@ -1,5 +1,6 @@
 package attachment.service.attachmentservice.kafka;
 
+import com.example.dto.IsVerificationDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.producer.ProducerRecord;
@@ -12,10 +13,10 @@ import org.springframework.stereotype.Service;
 public class KafkaProducer {
     private final KafkaTemplate<String, Object> kafkaTemplate;
 
-    public void sendTokenToValidate(String token) {
-        log.info("Token is sending to validate: " + token);
+    public void sendTokenToValidate(IsVerificationDto dto) {
+        log.info("Token is sending to validate: " + dto.getToken());
         ProducerRecord<String, Object> record = new ProducerRecord<>("token-validation-topic",
-                token);
+                dto);
         log.info("Record sending: " + record);
         kafkaTemplate.send(record);
     }

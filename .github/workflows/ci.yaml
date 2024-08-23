@@ -1,6 +1,4 @@
-name: Java CI
-
-on: [push, pull_request]
+on: [ push, pull_request ]
 
 jobs:
   build:
@@ -13,6 +11,18 @@ jobs:
         with:
           java-version: '21'
           distribution: 'adopt'
-          cache: maven
+
+      - name: Cache Maven packages
+        uses: actions/cache@v3
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-m2-cache-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-m2-cache-
       - name: Build with Maven
-        run: mvn --batch-mode --update-snapshots verify
+        run: mvn clean install --settings .github/maven-settings.xml
+        env:
+          TOKEN: ${{ secrets.TOKEN }}
+
+      - name: Run tests
+        run: mvn test

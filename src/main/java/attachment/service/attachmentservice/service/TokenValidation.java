@@ -1,11 +1,12 @@
 package attachment.service.attachmentservice.service;
 
+import com.example.dto.IsVerificationDto;
 import java.util.concurrent.CompletableFuture;
 
 public interface TokenValidation {
-    void sendTokenToValidate(String token);
+    void sendTokenToValidate(IsVerificationDto dto);
 
-    void handleValidationResponse(String response);
+    void handleValidationResponse(IsVerificationDto response);
 
     boolean waitForTokenValidation(String token);
 
