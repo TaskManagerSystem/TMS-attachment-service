@@ -2,6 +2,7 @@ package attachment.service.attachmentservice.service.impl;
 
 import attachment.service.attachmentservice.kafka.KafkaProducer;
 import attachment.service.attachmentservice.service.TokenValidation;
+import com.example.dto.IsVerificationDto;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
@@ -18,18 +19,17 @@ public class TokenValidationImpl implements TokenValidation {
     private final Map<String, CompletableFuture<Boolean>> responseMap = new ConcurrentHashMap<>();
 
     @Override
-    public void sendTokenToValidate(String token) {
-        producer.sendTokenToValidate(token);
+    public void sendTokenToValidate(IsVerificationDto dto) {
+        dto.setValid(false);
+        producer.sendTokenToValidate(dto);
     }
 
     @Override
-    public void handleValidationResponse(String response) {
+    public void handleValidationResponse(IsVerificationDto response) {
         log.info("Got response: " + response);
         try {
-            String[] parts = response.split(":");
-
-            String token = parts[0];
-            boolean isValid = Boolean.parseBoolean(parts[1]);
+            String token = response.getToken();
+            boolean isValid = response.isValid();
 
             CompletableFuture<Boolean> future = responseMap.remove(token);
 

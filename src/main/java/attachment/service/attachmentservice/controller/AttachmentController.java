@@ -1,8 +1,10 @@
 package attachment.service.attachmentservice.controller;
 
 import attachment.service.attachmentservice.service.AttachmentService;
+import attachment.service.attachmentservice.service.StringToDtoMapper;
 import attachment.service.attachmentservice.service.TokenValidation;
 import com.dropbox.core.DbxException;
+import com.example.dto.IsVerificationDto;
 import jakarta.persistence.EntityNotFoundException;
 import java.io.IOException;
 import lombok.RequiredArgsConstructor;
@@ -13,7 +15,6 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -26,14 +27,17 @@ import org.springframework.web.multipart.MultipartFile;
 public class AttachmentController {
     private final TokenValidation tokenValidation;
     private final AttachmentService attachmentService;
+    private final StringToDtoMapper mapper;
 
     @PostMapping
     public ResponseEntity<String> uploadFile(@RequestParam("taskId") Long taskId,
                                              @RequestParam("file") MultipartFile file,
-                                             @RequestHeader("Authorization") String token) {
-        tokenValidation.sendTokenToValidate(token);
+                                             @RequestParam("tokenDto") String tokenDto) {
+        IsVerificationDto dto = mapper.convertStringToDto(tokenDto);
 
-        boolean isValid = tokenValidation.waitForTokenValidation(token);
+        tokenValidation.sendTokenToValidate(dto);
+
+        boolean isValid = tokenValidation.waitForTokenValidation(dto.getToken());
 
         if (isValid) {
             try {
@@ -60,10 +64,12 @@ public class AttachmentController {
 
     @GetMapping
     public ResponseEntity<String> downloadFile(@RequestParam Long taskId,
-                                               @RequestHeader("Authorization") String token) {
-        tokenValidation.sendTokenToValidate(token);
+                                               @RequestParam("tokenDto") String tokenDto) {
+        IsVerificationDto dto = mapper.convertStringToDto(tokenDto);
 
-        boolean isValid = tokenValidation.waitForTokenValidation(token);
+        tokenValidation.sendTokenToValidate(dto);
+
+        boolean isValid = tokenValidation.waitForTokenValidation(dto.getToken());
 
         if (isValid) {
             try {
@@ -92,12 +98,13 @@ public class AttachmentController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteById(@PathVariable Long id,
-                                             @RequestHeader("Authorization") String token) {
+                                             @RequestParam("tokenDto") String tokenDto) {
         log.info("Received request to delete attachment with id: {}", id);
 
-        tokenValidation.sendTokenToValidate(token);
+        IsVerificationDto dto = mapper.convertStringToDto(tokenDto);
+        tokenValidation.sendTokenToValidate(dto);
 
-        boolean isValid = tokenValidation.waitForTokenValidation(token);
+        boolean isValid = tokenValidation.waitForTokenValidation(dto.getToken());
         if (isValid) {
             try {
                 attachmentService.deleteAttachment(id);
