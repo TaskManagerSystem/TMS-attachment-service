@@ -15,7 +15,6 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class TokenValidationImpl implements TokenValidation {
     private final KafkaProducer producer;
-
     private final Map<String, CompletableFuture<Boolean>> responseMap = new ConcurrentHashMap<>();
 
     @Override
